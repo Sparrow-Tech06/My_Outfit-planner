@@ -1,0 +1,14 @@
+[
+  {
+    "shirtName": "Green",
+    "shirtColor": "rgb(0,128,0)",
+    "pantName": "Black",
+    "pantColor": "#000"
+  },
+  {
+    "shirtName": "Blue",
+    "shirtColor": "#0d6efd",
+    "pantName": "White",
+    "pantColor": "#ffffff"
+  }
+]
