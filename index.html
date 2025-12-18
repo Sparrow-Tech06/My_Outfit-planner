@@ -2,7 +2,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Outfit Color Planner (JSON)</title>  <!-- Bootstrap CSS -->  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />  <!-- Bootstrap Icons -->  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />  <!-- React CDN -->  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>  <style>
+  <title>Outfit Color Planner (JSON)</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
     .outfit-box{
       height:160px;
       border-radius:14px;
@@ -10,9 +19,45 @@
       box-shadow:0 4px 10px rgba(0,0,0,.1);
     }
     .half{height:50%;}
-    .filter-bar input{min-width:180px;}
-  </style></head>
-<body class="bg-light"><div id="root"></div><script type="text/babel">
+    .filter-bar {
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      scrollbar-width: thin;
+      scrollbar-color: #888 #f1f1f1;
+    }
+    .filter-bar::-webkit-scrollbar {
+      height: 6px;
+    }
+    .filter-bar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    .filter-bar::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 10px;
+    }
+    .filter-bar::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    .filter-bar input {
+      min-width: 200px;
+      flex-shrink: 0;
+    }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 1020;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body class="bg-light">
+<div id="root"></div>
+<script type="text/babel">
 function App(){
   const [data,setData]=React.useState([]);
   const [filters,setFilters]=React.useState({name:'',shirt:'',pant:''});
@@ -38,22 +83,50 @@ function App(){
   return(
     <div>
       {/* Horizontal Filter Bar */}
-      <header className="bg-white shadow-sm sticky-top p-2">
+      <header className="sticky-header">
         <div className="container-fluid">
-          <div className="d-flex gap-2 filter-bar flex-wrap align-items-center">
-            <i className="bi bi-funnel-fill text-primary"></i>
+          <div className="d-flex align-items-center gap-3 py-2">
+            <div className="d-flex align-items-center gap-2 text-primary">
+              <i className="bi bi-funnel-fill fs-5"></i>
+              <span className="fw-medium">Filters</span>
+            </div>
+            
+            <div className="filter-bar flex-grow-1">
+              <input 
+                list="names" 
+                className="form-control" 
+                placeholder="Search by color or name..." 
+                onChange={e=>setFilters({...filters,name:e.target.value})}
+                value={filters.name}
+              />
+              <datalist id="names">{names.map((n,i)=><option key={i} value={n} />)}</datalist>
 
-            <input list="names" className="form-control" placeholder="Color / Name" onChange={e=>setFilters({...filters,name:e.target.value})} />
-            <datalist id="names">{names.map((n,i)=><option key={i} value={n} />)}</datalist>
+              <input 
+                list="shirts" 
+                className="form-control" 
+                placeholder="Filter by shirt..." 
+                onChange={e=>setFilters({...filters,shirt:e.target.value})}
+                value={filters.shirt}
+              />
+              <datalist id="shirts">{shirts.map((s,i)=><option key={i} value={s} />)}</datalist>
 
-            <input list="shirts" className="form-control" placeholder="Shirt" onChange={e=>setFilters({...filters,shirt:e.target.value})} />
-            <datalist id="shirts">{shirts.map((s,i)=><option key={i} value={s} />)}</datalist>
+              <input 
+                list="pants" 
+                className="form-control" 
+                placeholder="Filter by pant..." 
+                onChange={e=>setFilters({...filters,pant:e.target.value})}
+                value={filters.pant}
+              />
+              <datalist id="pants">{pants.map((p,i)=><option key={i} value={p} />)}</datalist>
+            </div>
 
-            <input list="pants" className="form-control" placeholder="Pant" onChange={e=>setFilters({...filters,pant:e.target.value})} />
-            <datalist id="pants">{pants.map((p,i)=><option key={i} value={p} />)}</datalist>
-
-            <button className="btn btn-outline-secondary" onClick={()=>setFilters({name:'',shirt:'',pant:''})}>
-              <i className="bi bi-x-circle"></i>
+            <button 
+              className="btn btn-outline-secondary btn-sm flex-shrink-0" 
+              onClick={()=>setFilters({name:'',shirt:'',pant:''})}
+              title="Clear all filters"
+            >
+              <i className="bi bi-x-circle me-1"></i>
+              Clear
             </button>
           </div>
         </div>
@@ -61,25 +134,33 @@ function App(){
 
       {/* Outfit Grid */}
       <main className="container py-4">
-        <div className="row g-3">
-          {filtered.map((o,i)=>(
-            <div className="col-6 col-md-3" key={i}>
-              <div className="outfit-box">
-                <div className="half d-flex align-items-center justify-content-center fw-bold text-white" style={{background:o.shirtColor}}>
-                  {o.shirtName}
-                </div>
-                <div className="half d-flex align-items-center justify-content-center fw-bold text-white" style={{background:o.pantColor}}>
-                  {o.pantName}
+        {filtered.length === 0 ? (
+          <div className="text-center py-5">
+            <i className="bi bi-tshirt text-muted fs-1 mb-3"></i>
+            <p className="text-muted">No outfits match your filters. Try a different search.</p>
+          </div>
+        ) : (
+          <div className="row g-3">
+            {filtered.map((o,i)=>(
+              <div className="col-6 col-md-3" key={i}>
+                <div className="outfit-box">
+                  <div className="half d-flex align-items-center justify-content-center fw-bold text-white" style={{background:o.shirtColor}}>
+                    {o.shirtName}
+                  </div>
+                  <div className="half d-flex align-items-center justify-content-center fw-bold text-white" style={{background:o.pantColor}}>
+                    {o.pantName}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script></body>
+</script>
+</body>
 </html>
