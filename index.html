@@ -1,8 +1,9 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Outfit Color Planner (JSON)</title>
+  <title>Outfit Color Planner</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Bootstrap Icons -->
@@ -12,155 +13,130 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <style>
-    .outfit-box{
-      height:160px;
-      border-radius:14px;
-      overflow:hidden;
-      box-shadow:0 4px 10px rgba(0,0,0,.1);
+    .outfit-box {
+      height: 160px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,.1);
     }
-    .half{height:50%;}
-    .filter-bar {
+    .half { height: 50%; }
+    .filter-container {
       display: flex;
       overflow-x: auto;
-      white-space: nowrap;
       gap: 0.75rem;
-      padding: 0.75rem 0;
-      scrollbar-width: thin;
-      scrollbar-color: #888 #f1f1f1;
-    }
-    .filter-bar::-webkit-scrollbar {
-      height: 6px;
-    }
-    .filter-bar::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
-    .filter-bar::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 10px;
-    }
-    .filter-bar::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-    .filter-bar input {
-      min-width: 200px;
-      flex-shrink: 0;
-    }
-    .sticky-header {
+      padding: 0.75rem;
+      background: white;
       position: sticky;
       top: 0;
-      z-index: 1020;
-      background: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      border-bottom: 1px solid #dee2e6;
+      white-space: nowrap;
+    }
+    .filter-container::-webkit-scrollbar {
+      height: 4px;
+    }
+    .filter-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .filter-container::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    .filter-input {
+      min-width: 180px;
+      flex-shrink: 0;
     }
   </style>
 </head>
 <body class="bg-light">
-<div id="root"></div>
-<script type="text/babel">
-function App(){
-  const [data,setData]=React.useState([]);
-  const [filters,setFilters]=React.useState({name:'',shirt:'',pant:''});
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    function App() {
+      const [data, setData] = React.useState([]);
+      const [filters, setFilters] = React.useState({ name: '', shirt: '', pant: '' });
 
-  // JSON fetch (local or API)
-  React.useEffect(()=>{
-    fetch('outfits.json')
-      .then(res=>res.json())
-      .then(json=>setData(json));
-  },[]);
+      // JSON fetch
+      React.useEffect(() => {
+        fetch('outfits.json')
+          .then(res => res.json())
+          .then(json => setData(json));
+      }, []);
 
-  // unique suggestions
-  const names=[...new Set(data.flatMap(d=>[d.shirtName,d.pantName]))];
-  const shirts=[...new Set(data.map(d=>d.shirtName))];
-  const pants=[...new Set(data.map(d=>d.pantName))];
+      // unique suggestions
+      const names = [...new Set(data.flatMap(d => [d.shirtName, d.pantName]))];
+      const shirts = [...new Set(data.map(d => d.shirtName))];
+      const pants = [...new Set(data.map(d => d.pantName))];
 
-  const filtered=data.filter(d=>
-    (filters.name==='' || d.shirtName.includes(filters.name) || d.pantName.includes(filters.name)) &&
-    (filters.shirt==='' || d.shirtName===filters.shirt) &&
-    (filters.pant==='' || d.pantName===filters.pant)
-  );
+      const filtered = data.filter(d =>
+        (filters.name === '' || d.shirtName.includes(filters.name) || d.pantName.includes(filters.name)) &&
+        (filters.shirt === '' || d.shirtName === filters.shirt) &&
+        (filters.pant === '' || d.pantName === filters.pant)
+      );
 
-  return(
-    <div>
-      {/* Horizontal Filter Bar */}
-      <header className="sticky-header">
-        <div className="container-fluid">
-          <div className="d-flex align-items-center gap-3 py-2">
-            <div className="d-flex align-items-center gap-2 text-primary">
-              <i className="bi bi-funnel-fill fs-5"></i>
-              <span className="fw-medium">Filters</span>
-            </div>
-            
-            <div className="filter-bar flex-grow-1">
-              <input 
-                list="names" 
-                className="form-control" 
-                placeholder="Search by color or name..." 
-                onChange={e=>setFilters({...filters,name:e.target.value})}
-                value={filters.name}
-              />
-              <datalist id="names">{names.map((n,i)=><option key={i} value={n} />)}</datalist>
+      return (
+        <div>
+          {/* Horizontal Filter Bar with scroll */}
+          <div className="filter-container">
+            <input
+              list="names"
+              className="form-control filter-input"
+              placeholder="Search colors/names"
+              onChange={e => setFilters({ ...filters, name: e.target.value })}
+            />
+            <datalist id="names">
+              {names.map((n, i) => <option key={i} value={n} />)}
+            </datalist>
 
-              <input 
-                list="shirts" 
-                className="form-control" 
-                placeholder="Filter by shirt..." 
-                onChange={e=>setFilters({...filters,shirt:e.target.value})}
-                value={filters.shirt}
-              />
-              <datalist id="shirts">{shirts.map((s,i)=><option key={i} value={s} />)}</datalist>
+            <input
+              list="shirts"
+              className="form-control filter-input"
+              placeholder="Shirt"
+              onChange={e => setFilters({ ...filters, shirt: e.target.value })}
+            />
+            <datalist id="shirts">
+              {shirts.map((s, i) => <option key={i} value={s} />)}
+            </datalist>
 
-              <input 
-                list="pants" 
-                className="form-control" 
-                placeholder="Filter by pant..." 
-                onChange={e=>setFilters({...filters,pant:e.target.value})}
-                value={filters.pant}
-              />
-              <datalist id="pants">{pants.map((p,i)=><option key={i} value={p} />)}</datalist>
-            </div>
-
-            <button 
-              className="btn btn-outline-secondary btn-sm flex-shrink-0" 
-              onClick={()=>setFilters({name:'',shirt:'',pant:''})}
-              title="Clear all filters"
-            >
-              <i className="bi bi-x-circle me-1"></i>
-              Clear
-            </button>
+            <input
+              list="pants"
+              className="form-control filter-input"
+              placeholder="Pant"
+              onChange={e => setFilters({ ...filters, pant: e.target.value })}
+            />
+            <datalist id="pants">
+              {pants.map((p, i) => <option key={i} value={p} />)}
+            </datalist>
           </div>
-        </div>
-      </header>
 
-      {/* Outfit Grid */}
-      <main className="container py-4">
-        {filtered.length === 0 ? (
-          <div className="text-center py-5">
-            <i className="bi bi-tshirt text-muted fs-1 mb-3"></i>
-            <p className="text-muted">No outfits match your filters. Try a different search.</p>
-          </div>
-        ) : (
-          <div className="row g-3">
-            {filtered.map((o,i)=>(
-              <div className="col-6 col-md-3" key={i}>
-                <div className="outfit-box">
-                  <div className="half d-flex align-items-center justify-content-center fw-bold text-white" style={{background:o.shirtColor}}>
-                    {o.shirtName}
-                  </div>
-                  <div className="half d-flex align-items-center justify-content-center fw-bold text-white" style={{background:o.pantColor}}>
-                    {o.pantName}
+          {/* Outfit Grid */}
+          <main className="container py-4">
+            <div className="row g-3">
+              {filtered.map((o, i) => (
+                <div className="col-6 col-md-3" key={i}>
+                  <div className="outfit-box">
+                    <div
+                      className="half d-flex align-items-center justify-content-center fw-bold text-white"
+                      style={{ background: o.shirtColor }}
+                    >
+                      {o.shirtName}
+                    </div>
+                    <div
+                      className="half d-flex align-items-center justify-content-center fw-bold text-white"
+                      style={{ background: o.pantColor }}
+                    >
+                      {o.pantName}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
+              ))}
+            </div>
+          </main>
+        </div>
+      );
+    }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
